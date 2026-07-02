@@ -7,10 +7,18 @@
   "files.exclude": {
     "**/__pycache__": true,
     "**/*.pyc": true,
-    "**/*.pyo": true
+    "**/*.pyo": true,
+    "models/*.pth": true,
+    "models/*.pkl": true,
+    "models/*.json": true
   },
   "search.exclude": {
     "**/__pycache__": true,
-    "**/*.pyc": true
+    "**/*.pyc": true,
+    "models/": true
+  },
+  "files.associations": {
+    "*.pth": "binary",
+    "*.pkl": "binary"
   }
 }
