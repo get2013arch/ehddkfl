@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(python -m pip --version)",
+      "PowerShell(& \"C:\\\\Windows\\\\System32\\\\dxdiag.exe\" /t \"$env:TEMP\\\\dxdiag.txt\"; Start-Sleep 5; Get-Content \"$env:TEMP\\\\dxdiag.txt\" | Select-String \"OS|DirectX|Windows\")",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(python -c ' *)",
+      "Bash(mkdir \"G:\\\\30219이도훈_동아리\\\\.vscode\" 2>nul & echo done)",
+      "Bash(git commit *)",
+      "Bash(git filter-branch -f --msg-filter 'python -c \" *)",
+      "Bash(git stash *)",
+      "Bash(set FILTER_BRANCH_SQUELCH_WARNING=1)"
+    ]
+  }
+}
