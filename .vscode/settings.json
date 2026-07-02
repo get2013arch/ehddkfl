@@ -1,0 +1,7 @@
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "[python]": {
+    "files.encoding": "utf8"
+  }
+}

@@ -1,0 +1,23 @@
+# 학습된 모델 바이너리 (용량이 커서 제외)
+models/*.pth
+models/*.pkl
+models/*.json
+
+# 업로드 임시 파일
+uploads/
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 가상환경
+venv/
+.env/
+env/
+
+# IDE
+.idea/
+*.suo
+*.user
