@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MalwareGuard — AI 악성 프로그램 탐지기</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">MalwareGuard</span>
+      </div>
+      <div class="model-status-badge" id="modelBadge">
+        {% if model_ready %}
+          <span class="badge badge-ok">● 모델 준비됨</span>
+        {% else %}
+          <span class="badge badge-warn">● 모델 미준비</span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 히어로 섹션 -->
+    <section class="hero">
+      <h1>AI 기반 악성 프로그램 탐지</h1>
+      <p class="hero-sub">딥러닝 모델이 파일을 분석하여 악성 여부와 종류를 판별합니다</p>
+
+      {% if not model_ready %}
+      <div class="alert alert-warn">
+        <strong>모델이 학습되지 않았습니다.</strong>
+        아래 버튼을 눌러 먼저 AI 모델을 학습시키세요.
+        <button class="btn btn-primary" onclick="trainModel()">AI 모델 학습 시작</button>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- 탭 메뉴 -->
+    <div class="tabs">
+      <button class="tab active" data-tab="file">파일 업로드 검사</button>
+      <button class="tab" data-tab="system">컴퓨터 전체 검사</button>
+      <button class="tab" data-tab="train">모델 관리</button>
+    </div>
+
+    <!-- 파일 업로드 탭 -->
+    <section class="tab-content active" id="tab-file">
+      <div class="card">
+        <h2>파일 업로드 검사</h2>
+        <p class="card-desc">파일 또는 폴더를 드래그 앤 드롭하거나 선택하세요. (파일당 최대 100MB)</p>
+
+        <div class="upload-mode-toggle">
+          <button class="mode-btn active" id="modeFile" onclick="setMode('file')">📄 파일 선택</button>
+          <button class="mode-btn" id="modeFolder" onclick="setMode('folder')">📁 폴더 선택</button>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <div class="drop-icon" id="dropIcon">📄</div>
+          <p id="dropText">파일을 여기에 드롭하거나 클릭하여 선택</p>
+          <p class="drop-sub" id="dropSub">모든 형식 지원 — PE 파일(.exe .dll .sys 등)은 정밀 분석</p>
+          <input type="file" id="fileInput" hidden />
+          <input type="file" id="folderInput" hidden webkitdirectory multiple />
+        </div>
+
+        <div id="fileInfo" class="file-info hidden"></div>
+        <button class="btn btn-primary" id="scanBtn" onclick="scanSelected()" disabled>검사 시작</button>
+      </div>
+
+      <div id="fileResult" class="result-area hidden"></div>
+    </section>
+
+    <!-- 시스템 스캔 탭 -->
+    <section class="tab-content" id="tab-system">
+      <div class="card">
+        <h2>컴퓨터 전체 검사</h2>
+        <p class="card-desc">지정한 경로 또는 전체 드라이브를 검사합니다.</p>
+
+        <div class="drive-buttons" id="driveButtons">
+          <span style="font-size:.85rem;color:var(--text2)">드라이브 선택:</span>
+        </div>
+        <div class="path-input-row" style="margin-top:10px">
+          <input type="text" id="scanPath" value="C:\" class="path-input"
+                 placeholder="검사할 경로 (예: C:\, D:\Programs)" />
+          <button class="btn btn-primary" onclick="startSystemScan()">검사 시작</button>
+          <button class="btn btn-danger hidden" id="stopBtn" onclick="stopScan()">중지</button>
+        </div>
+
+        <div id="systemProgress" class="scan-progress hidden">
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <p id="progressText">준비 중...</p>
+          <p id="currentFile" class="current-file"></p>
+        </div>
+      </div>
+
+      <div id="systemResult" class="result-area"></div>
+    </section>
+
+    <!-- 모델 관리 탭 -->
+    <section class="tab-content" id="tab-train">
+      <div class="card">
+        <h2>AI 모델 학습 및 관리</h2>
+        <p class="card-desc">
+          딥러닝 모델을 새로 학습시킵니다.<br>
+          악성 프로그램과 정상 프로그램의 특징을 <strong>1:5 비율</strong>로 학습하여
+          불균형 데이터 문제를 처리합니다.
+        </p>
+
+        <div class="model-info-grid">
+          <div class="model-info-card">
+            <div class="info-icon">🔍</div>
+            <div class="info-title">이진 탐지 모델</div>
+            <div class="info-desc">악성(1) vs 정상(0) 분류<br>가중치 손실 함수 적용</div>
+            <div id="detectorStatus" class="status-dot"></div>
+          </div>
+          <div class="model-info-card">
+            <div class="info-icon">🏷️</div>
+            <div class="info-title">패밀리 분류 모델</div>
+            <div class="info-desc">랜섬웨어·트로이목마 등<br>10종 악성코드 유형 분류</div>
+            <div id="familyStatus" class="status-dot"></div>
+          </div>
+        </div>
+
+        <div class="train-actions">
+          <button class="btn btn-primary" onclick="trainModel()">학습 시작</button>
+          <button class="btn btn-secondary" onclick="checkModelStatus()">상태 확인</button>
+        </div>
+
+        <div id="trainLog" class="train-log hidden"></div>
+      </div>
+
+      <div class="card">
+        <h2>학습 아키텍처</h2>
+        <div class="arch-diagram">
+          <div class="arch-step">
+            <div class="arch-icon">📥</div>
+            <div>PE 헤더<br>특징 추출</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-step">
+            <div class="arch-icon">⚖️</div>
+            <div>정규화<br>(StandardScaler)</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-step">
+            <div class="arch-icon">🧠</div>
+            <div>4층 신경망<br>(BatchNorm + Dropout)</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-step">
+            <div class="arch-icon">🎯</div>
+            <div>악성/정상<br>+ 종류 예측</div>
+          </div>
+        </div>
+        <p class="arch-note">
+          * 23차원 특징: 섹션 수·엔트로피·의심 API·파일 크기 등<br>
+          * WeightedRandomSampler로 1:5 불균형 자동 보정
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>MalwareGuard · 딥러닝 기반 악성 프로그램 탐지 시스템 · 교육 목적용</p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
